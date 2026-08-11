@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kertészeti Tudástár</title>
+<style>
+  :root {
+    --bg: #f4f1ea;
+    --bg-soft: #ffffff;
+    --ink: #23301f;
+    --ink-soft: #5b6b53;
+    --accent: #3f7d3a;
+    --accent-dark: #2c5a2a;
+    --accent-soft: #e4efdd;
+    --card-border: #ddd6c4;
+    --shadow: 0 4px 14px rgba(40, 60, 30, 0.10);
+    --chip-bg: #eef2e6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #171d16;
+      --bg-soft: #202a1e;
+      --ink: #e9efe4;
+      --ink-soft: #a9b8a0;
+      --accent: #6fbf5f;
+      --accent-dark: #8fd47f;
+      --accent-soft: #26361f;
+      --card-border: #33402e;
+      --shadow: 0 4px 18px rgba(0,0,0,0.35);
+      --chip-bg: #263120;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.4;
+  }
+  header {
+    padding: 2.6rem 1.5rem 1.4rem;
+    text-align: center;
+    background: linear-gradient(180deg, var(--accent-soft), transparent);
+  }
+  header h1 {
+    margin: 0 0 0.4rem;
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    color: var(--accent-dark);
+  }
+  header p {
+    margin: 0;
+    color: var(--ink-soft);
+    font-size: 0.98rem;
+  }
+  .controls {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--bg);
+    padding: 0.9rem 1.5rem 1rem;
+    border-bottom: 1px solid var(--card-border);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    align-items: center;
+    justify-content: center;
+  }
+  .filter-btn {
+    border: 1px solid var(--card-border);
+    background: var(--bg-soft);
+    color: var(--ink);
+    padding: 0.45rem 0.95rem;
+    border-radius: 999px;
+    font-size: 0.88rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+  }
+  .filter-btn:hover { border-color: var(--accent); }
+  .filter-btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+  #search {
+    flex: 1 1 220px;
+    max-width: 320px;
+    padding: 0.5rem 0.9rem;
+    border-radius: 999px;
+    border: 1px solid var(--card-border);
+    background: var(--bg-soft);
+    color: var(--ink);
+    font-size: 0.9rem;
+  }
+  #search:focus { outline: 2px solid var(--accent); }
+  .count {
+    text-align: center;
+    color: var(--ink-soft);
+    font-size: 0.85rem;
+    margin: 1rem 0 0.2rem;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+    gap: 1.4rem;
+    padding: 1.2rem 1.5rem 3rem;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  .card {
+    background: var(--bg-soft);
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+    display: flex;
+    flex-direction: column;
+  }
+  .card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 24px rgba(40,60,30,0.18);
+  }
+  .thumb-wrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    background: var(--chip-bg);
+  }
+  .thumb-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top;
+    display: block;
+    transition: transform 0.3s ease;
+  }
+  .card:hover .thumb-wrap img { transform: scale(1.05); }
+  .cat-badge {
+    position: absolute;
+    top: 0.6rem;
+    left: 0.6rem;
+    background: rgba(0,0,0,0.55);
+    color: #fff;
+    font-size: 0.72rem;
+    padding: 0.25rem 0.6rem;
+    border-radius: 999px;
+    backdrop-filter: blur(2px);
+  }
+  .card-body {
+    padding: 0.85rem 1rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    flex: 1;
+  }
+  .card-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .tag-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-top: auto;
+  }
+  .tag {
+    font-size: 0.72rem;
+    background: var(--chip-bg);
+    color: var(--ink-soft);
+    padding: 0.15rem 0.55rem;
+    border-radius: 999px;
+  }
+  .source {
+    font-size: 0.76rem;
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .empty {
+    text-align: center;
+    color: var(--ink-soft);
+    padding: 3rem 1rem;
+    display: none;
+  }
+
+  /* Lightbox */
+  .lightbox {
+    position: fixed;
+    inset: 0;
+    background: rgba(10, 15, 8, 0.92);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 2rem 1rem;
+  }
+  .lightbox.open { display: flex; }
+  .lightbox-inner {
+    max-width: min(900px, 94vw);
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.8rem;
+  }
+  .lightbox img {
+    max-width: 100%;
+    max-height: 74vh;
+    border-radius: 10px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+  }
+  .lightbox-caption {
+    color: #f2f2ea;
+    text-align: center;
+    font-size: 0.95rem;
+  }
+  .lightbox-caption .source { color: #9be08a; }
+  .lb-close, .lb-nav {
+    position: absolute;
+    background: rgba(255,255,255,0.12);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    font-size: 1.3rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .lb-close:hover, .lb-nav:hover { background: rgba(255,255,255,0.25); }
+  .lb-close { top: 1.2rem; right: 1.2rem; }
+  .lb-prev { left: 1rem; top: 50%; transform: translateY(-50%); }
+  .lb-next { right: 1rem; top: 50%; transform: translateY(-50%); }
+  @media (max-width: 640px) {
+    .lb-prev, .lb-next { width: 38px; height: 38px; }
+  }
+  footer {
+    text-align: center;
+    color: var(--ink-soft);
+    font-size: 0.8rem;
+    padding: 1.5rem 1rem 2.5rem;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🌷 Kertészeti Tudástár</h1>
+  <p>Összegyűjtött virág- és kerttippek egy helyen — szűrhető, kereshető kártyagyűjtemény</p>
+</header>
+
+<div class="controls">
+  <input id="search" type="text" placeholder="Keresés (pl. rózsa, hortenzia, szaporítás)…">
+  <button class="filter-btn active" data-filter="all">Összes</button>
+  <button class="filter-btn" data-filter="fajtak">🌸 Virágfajták</button>
+  <button class="filter-btn" data-filter="gondozas">💧 Gondozás</button>
+  <button class="filter-btn" data-filter="szaporitas">🌱 Szaporítás</button>
+  <button class="filter-btn" data-filter="novenyvedelem">🛡️ Növényvédelem</button>
+  <button class="filter-btn" data-filter="zoldseg">🥕 Zöldség &amp; gyümölcs</button>
+</div>
+
+<div class="count" id="count"></div>
+<div class="grid" id="grid"></div>
+<div class="empty" id="empty">Nincs a keresésnek megfelelő találat.</div>
+
+<div class="lightbox" id="lightbox">
+  <button class="lb-close" id="lbClose">✕</button>
+  <button class="lb-nav lb-prev" id="lbPrev">‹</button>
+  <button class="lb-nav lb-next" id="lbNext">›</button>
+  <div class="lightbox-inner">
+    <img id="lbImg" src="" alt="">
+    <div class="lightbox-caption">
+      <div id="lbTitle"></div>
+      <div class="source" id="lbSource"></div>
+    </div>
+  </div>
+</div>
+
+<footer>184 kártya · kertikek.hu, kertia.hu, hobbikert.hu, kertlap és egyéb forrásokból mentett tippek</footer>
+
+<script>
+const CATS = {
+  fajtak: "🌸 Virágfajták",
+  gondozas: "💧 Gondozás",
+  szaporitas: "🌱 Szaporítás",
+  novenyvedelem: "🛡️ Növényvédelem",
+  zoldseg: "🥕 Zöldség &amp; gyümölcs"
+};
+
+const items = [
+  { file: "Screenshot_2026-02-05-21-36-17-711_com.facebook.katana.jpg", title: "A legjobb zöldségpárosítások cserépben", source: "hobbikert.hu", cat: "fajtak", tags: ["cserepes-zoldsegek","parositas","paradicsom","uborka"] },
+  { file: "Screenshot_2026-02-05-21-37-06-731_com.facebook.katana.jpg", title: "Zöldségek, amelyek magukhoz csalogatják a kert segítőit", source: "hobbikert.hu", cat: "zoldseg", tags: ["tarsnovenyek","beporzok","zoldsegek","hasznos-rovarok"] },
+  { file: "Screenshot_2026-02-05-21-38-52-968_com.facebook.katana.jpg", title: "Zöldségek, amelyek felfelé nőnek és támogatják egymást", source: "hobbikert.hu", cat: "zoldseg", tags: ["kukorica","futobab","tarsitas","fuggoleges-termesztes"] },
+  { file: "Screenshot_2026-02-16-19-56-51-278_com.facebook.katana.jpg", title: "Magültetési táblázat - vetőmag ültetési mélység útmutató", source: "kerti tipp", cat: "szaporitas", tags: ["magvetes","ultetesi-melyseg","vetomag","zoldsegmagok"] },
+  { file: "Screenshot_2026-03-21-15-41-04-644_com.miui.home.jpg", title: "10 csodálatos ablakláda kombináció", source: "kertikek.hu", cat: "fajtak", tags: ["ablaklada","viragkombinacio","balkon","petunia"] },
+  { file: "Screenshot_2026-03-21-21-13-49-602_com.facebook.katana.jpg", title: "12 virág, amit csak egyszer kell elültetned", source: "kertikek.hu", cat: "fajtak", tags: ["onvetof-viragok","evelo-viragok","kupvirag","barsonyvirag"] },
+  { file: "Screenshot_2026-03-23-17-22-31-869_com.facebook.katana.jpg", title: "Legjobb zöldség párosítások vertikális kerthez", source: "kertikek.hu", cat: "zoldseg", tags: ["fuggoleges-kert","zoldsegtermesztes","tarsitas","futobab"] },
+  { file: "Screenshot_2026-03-24-17-59-26-227_com.facebook.katana.jpg", title: "A paradicsomerőd: egy teljes rendszer - 9 társ, amely véd, beporoz és arat", source: "kertikek.hu", cat: "zoldseg", tags: ["paradicsom","tarsnovenyek","beporzas","novenyvedelem"] },
+  { file: "Screenshot_2026-03-26-13-04-18-979_com.facebook.katana.jpg", title: "Készíts saját folyékony műtrágyát házilag", source: "kertikek.hu", cat: "gondozas", tags: ["mutragya","komposzt","tapanyag-utanpotlas","paradicsom"] },
+  { file: "Screenshot_2026-03-27-19-57-09-606_com.facebook.katana.jpg", title: "Talajtakaró növények, amik szinte maguktól nőnek", source: "kertikek.hu", cat: "fajtak", tags: ["talajtakaro-novenyek","kuszokakukkfu","sziklakert","borostyan"] },
+  { file: "Screenshot_2026-03-29-09-12-44-994_com.facebook.katana.jpg", title: "A rózsáid táplálása - egyszerű ütemterv a káprázatos virágzáshoz", source: "kertikek.hu", cat: "gondozas", tags: ["rozsa","tapanyagpotlas","mutragya","apolasi-utemterv"] },
+  { file: "Screenshot_2026-03-30-17-03-44-399_com.facebook.katana.jpg", title: "Szobanövény és kerti virág fényigény-kalauz (teljes nap - teljes árnyék)", source: "kertikek.hu", cat: "gondozas", tags: ["fenyigeny","evelo-viragok","arnyektures","kerttervezes"] },
+  { file: "Screenshot_2026-04-06-22-14-30-533_com.facebook.katana.jpg", title: "Gyorsan megeredő és hosszan virágzó tavaszi virágok", source: "kerti tipp", cat: "fajtak", tags: ["tavaszi-viragok","harangvirag","macskamenta","kertosveny"] },
+  { file: "Screenshot_2026-04-15-19-39-19-719_com.facebook.katana.jpg", title: "Fűszernövények a kertben", source: "kertikek.hu", cat: "zoldseg", tags: ["fuszernovenyek","bazsalikom","rozmaring","menta"] },
+  { file: "Screenshot_2026-04-15-20-33-17-795_com.facebook.katana.jpg", title: "Málna gondozása - bőséges termés és egészséges növények", source: "kertikek.hu", cat: "zoldseg", tags: ["malna","gyumolcstermesztes","metszes","tamrendszer"] },
+  { file: "Screenshot_2026-04-15-20-46-42-676_com.facebook.katana.jpg", title: "7 gyakori paradicsombetegség", source: "kerti tipp", cat: "novenyvedelem", tags: ["paradicsom","levelbetegseg","lisztharmat","tapanyaghiany"] },
+  { file: "Screenshot_2026-04-16-13-11-36-265_com.facebook.katana.jpg", title: "Szobanövény fényigény-kalauz", source: "kerti tipp", cat: "gondozas", tags: ["szobanovenyek","fenyigeny","arnyektuffro","elhelyezes"] },
+  { file: "Screenshot_2026-04-16-15-03-42-163_com.facebook.katana.jpg", title: "Virágoskert tervezése - áprilisi hagymások", source: "kertikek.hu", cat: "fajtak", tags: ["hagymas-viragok","dalia","kardvirag","liliom"] },
+  { file: "Screenshot_2026-04-22-21-29-02-267_com.facebook.katana.jpg", title: "Száraz, savanyú, tömörödött: ezek a gyomok jelezhetik a talajproblémát", source: "hobbikert.hu", cat: "gondozas", tags: ["talaj","gyomok","phszint","talajjavitas"] },
+  { file: "Screenshot_2026-04-28-08-54-18-775_com.facebook.katana.jpg", title: "Levegőtisztító növények a kertedben", source: "kertikek.hu", cat: "fajtak", tags: ["levegotisztito-novenyek","szobanovenyek","sanseviera","levendula"] },
+  { file: "Screenshot_2026-05-15-08-48-48-936_com.facebook.katana.jpg", title: "Ehinaciák - a kert napsugarai", source: "Körtvélyeskert", cat: "fajtak", tags: ["echinacea","kupvirag","evelo-viragok","beporzok"] },
+  { file: "Screenshot_2026-05-15-11-13-49-658_com.facebook.katana.jpg", title: "Mielőtt mulcsozol a kertedben", source: "kerti tipp", cat: "gondozas", tags: ["mulcsozás","talajtakarás","szalma","karton"] },
+  { file: "Screenshot_2026-05-15-11-17-08-885_com.facebook.katana.jpg", title: "Levendula és rózsa: nem jó társak", source: "hobbikert.hu", cat: "fajtak", tags: ["levendula","rózsa","növénytársítás"] },
+  { file: "Screenshot_2026-05-15-11-18-02-653_com.facebook.katana.jpg", title: "Szárazságtűrő évelők 4+1", source: "kertia.hu", cat: "fajtak", tags: ["levendula","varjúháj","kasvirág","csenkesz"] },
+  { file: "Screenshot_2026-05-15-11-46-55-721_com.facebook.katana.jpg", title: "Sziklakert növényei, amelyek jól bírják a szárazságot", source: "kertikek.hu", cat: "fajtak", tags: ["sziklakert","kőtörőfű","kövirózsa","kakukkfű"] },
+  { file: "Screenshot_2026-05-15-11-57-35-113_com.facebook.katana.jpg", title: "8 gyönyörű szárazságtűrő virág", source: "kerti tipp", cat: "fajtak", tags: ["kokárdavirág","levendula","kasvirág","kövirózsa"] },
+  { file: "Screenshot_2026-05-16-07-44-35-976_com.facebook.katana.jpg", title: "Virágos kert kialakítása lépésről lépésre", source: "kertikek.hu", cat: "gondozas", tags: ["virágoskert","tervezés","ültetés","öntözés"] },
+  { file: "Screenshot_2026-05-17-09-24-15-647_com.facebook.katana.jpg", title: "Allelopátia: fekete dió hatása a szomszédos növényekre", source: "kerti tipp", cat: "gondozas", tags: ["allelopátia","fekete dió","paradicsom","saláta"] },
+  { file: "Screenshot_2026-05-18-11-24-57-756_com.facebook.katana.jpg", title: "Látványos virágágyások kialakítása tavasszal", source: "kertikek.hu", cat: "fajtak", tags: ["tulipán","nárcisz","jácint","virágágyás"] },
+  { file: "Screenshot_2026-05-18-13-39-38-135_com.facebook.katana.jpg", title: "Ültetési döntések májusban", source: "kertikek.hu", cat: "zoldseg", tags: ["paradicsom","paprika","bazsalikom","muskátli"] },
+  { file: "Screenshot_2026-05-18-13-50-40-612_com.facebook.katana.jpg", title: "Cukkini jó és rossz társai", source: "kerti tipp", cat: "zoldseg", tags: ["cukkini","növénytársítás","kukorica","burgonya"] },
+  { file: "Screenshot_2026-05-18-16-30-46-091_com.facebook.katana.jpg", title: "Kékcsillag (Amsonia tabernaemontana) gondozása", source: "kertikek.hu", cat: "gondozas", tags: ["kékcsillag","amsonia","öntözés","metszés"] },
+  { file: "Screenshot_2026-05-19-14-05-57-871_com.facebook.katana.jpg", title: "Növénytársítási táblázat", source: "kerti tipp", cat: "zoldseg", tags: ["növénytársítás","sárgarépa","paradicsom","uborka"] },
+  { file: "Screenshot_2026-05-22-09-34-29-519_com.facebook.katana.jpg", title: "12 szárazságtűrő virágos növény", source: "Praktikák", cat: "fajtak", tags: ["levendula","porcsinrózsa","kasvirág","kokárdavirág"] },
+  { file: "Screenshot_2026-05-22-09-34-55-658_com.facebook.katana.jpg", title: "Kúszónövények cserépben is", source: "kerti tipp", cat: "fajtak", tags: ["kúszónövény","klematisz","lila akác","kúszórózsa"] },
+  { file: "Screenshot_2026-05-22-09-35-30-953_com.facebook.katana.jpg", title: "Függőkosár variációk", source: "Praktikák", cat: "fajtak", tags: ["függőkosár","muskátli","levendula","eper"] },
+  { file: "Screenshot_2026-05-22-15-40-11-761_com.facebook.katana.jpg", title: "Trópusi élénk színkavalkád a kertben", source: "kertia.hu", cat: "fajtak", tags: ["indián dísznád","mocsári mályva","golgotavirág","ricinus"] },
+  { file: "Screenshot_2026-05-23-07-44-43-455_com.facebook.katana.jpg", title: "6 szárazságtűrő virág (2. rész)", source: "Učitelia základných a stredných škôl", cat: "fajtak", tags: ["ligeti zsálya","lángvirág","őszirózsa","jukka"] },
+  { file: "Screenshot_2026-05-23-07-49-29-262_com.facebook.katana.jpg", title: "Fűszernövény társnövények: segítség a kertben", source: "hobbikert.hu", cat: "zoldseg", tags: ["bazsalikom","kapor","rozmaring","metélőhagyma"] },
+  { file: "Screenshot_2026-05-23-11-14-47-126_com.facebook.katana.jpg", title: "Bambusz: tudd, melyiket ülteted el", source: "kerti tipp", cat: "gondozas", tags: ["bambusz","gyökérzár","tarackoló","bokrosodó"] },
+  { file: "Screenshot_2026-05-23-11-15-11-608_com.facebook.katana.jpg", title: "Pampafű gondozása", source: "kerti tipp", cat: "gondozas", tags: ["pampafű","ültetés","öntözés","metszés"] },
+  { file: "Screenshot_2026-05-24-14-29-28-453_com.facebook.katana.jpg", title: "5 virág, ami egész nyáron virágzik", source: "kertikek.hu", cat: "fajtak", tags: ["muskátli","petúnia","hibiszkusz","lantána"] },
+  { file: "Screenshot_2026-05-24-14-32-45-081_com.facebook.katana.jpg", title: "7 növény, ami túléli a hőséget", source: "kertikek.hu", cat: "fajtak", tags: ["hőségtűrő","levendula","kaktusz","kövirózsa"] },
+  { file: "Screenshot_2026-05-24-14-37-20-186_com.facebook.katana.jpg", title: "Így készítsd fel rózsáidat a nyárra májusban", source: "Hobbikert.hu", cat: "gondozas", tags: ["rózsa","tápanyagpótlás","metszés","kártevőirtás"] },
+  { file: "Screenshot_2026-05-25-07-29-14-376_com.facebook.katana.jpg", title: "Miért sárgul a rózsa levele?", source: "kertikek.hu", cat: "gondozas", tags: ["rózsa","sárguló levél","tápanyaghiány","öntözés"] },
+  { file: "Screenshot_2026-05-25-10-23-49-102_com.facebook.katana.jpg", title: "Füge (Ficus carica)", source: "kertia.hu", cat: "zoldseg", tags: ["füge","gyümölcsfa","ficus carica"] },
+  { file: "Screenshot_2026-05-25-16-32-35-101_com.facebook.katana.jpg", title: "A levendula gondozásának legfontosabb titkai", source: "kertikek.hu", cat: "gondozas", tags: ["levendula","öntözés","metszés","napfény"] },
+  { file: "Screenshot_2026-05-25-20-39-27-333_com.facebook.katana.jpg", title: "4 futónövény, ami gyorsan befutja a kerítést", source: "kertikek.hu", cat: "fajtak", tags: ["futónövény","borostyán","klemátisz","vadszőlő"] },
+  { file: "Screenshot_2026-05-25-20-39-45-998_com.facebook.katana.jpg", title: "6 osviežujúcich domácich limonád", source: "kerti tipp", cat: "zoldseg", tags: ["limonádé","gyümölcs","nyári ital","frissítő"] },
+  { file: "Screenshot_2026-05-25-20-41-38-042_com.facebook.katana.jpg", title: "Mély bordó és magenta ültetési kombináció", source: "kertia.hu", cat: "fajtak", tags: ["bordó","magenta","bazsarózsa","gyűszűvirág"] },
+  { file: "Screenshot_2026-05-25-20-43-42-565_com.facebook.katana.jpg", title: "Viaszvirág (Hoya carnosa) gondozása", source: "kertikek.hu", cat: "gondozas", tags: ["viaszvirág","hoya","öntözés","fényigény"] },
+  { file: "Screenshot_2026-05-25-21-35-50-471_com.facebook.katana.jpg", title: "Szárazságtűrő virágok a kertben", source: "kerti tipp", cat: "fajtak", tags: ["szárazságtűrő","levendula","kasvirág","kokárdavirág"] },
+  { file: "Screenshot_2026-05-26-08-38-48-975_com.facebook.katana.jpg", title: "Mit tegyünk a hangyák ellen a kertben?", source: "kertikek.hu", cat: "novenyvedelem", tags: ["hangyák","kártevő","természetes védekezés"] },
+  { file: "Screenshot_2026-05-26-17-11-53-500_com.facebook.katana.jpg", title: "5 gyorsan növő balkonvirág", source: "kertikek.hu", cat: "fajtak", tags: ["balkonvirág","muskátli","petúnia","verbéna"] },
+  { file: "Screenshot_2026-05-27-06-18-55-975_com.facebook.katana.jpg", title: "5 árnyéktűrő virág balkonra", source: "kertikek.hu", cat: "fajtak", tags: ["árnyéktűrő","begónia","fukszia","hosta"] },
+  { file: "Screenshot_2026-05-27-06-21-02-461_com.facebook.katana.jpg", title: "Miért nem terem az uborka?", source: "kertikek.hu", cat: "zoldseg", tags: ["uborka","megporzás","öntözés","tápanyaghiány"] },
+  { file: "Screenshot_2026-05-27-08-22-43-833_com.facebook.katana.jpg", title: "7 virág, amit imádnak a méhek", source: "kertikek.hu", cat: "fajtak", tags: ["méhbarát","levendula","napraforgó","zsálya"] },
+  { file: "Screenshot_2026-05-27-13-33-08-379_com.facebook.katana.jpg", title: "Szobanövények átültetési gyakorisága", source: "kerti tipp", cat: "gondozas", tags: ["szobanövény","átültetés","cserepezés"] },
+  { file: "Screenshot_2026-05-28-06-12-41-119_com.facebook.katana.jpg", title: "Hogyan virágoztasd újra az orchideát?", source: "kertikek.hu", cat: "gondozas", tags: ["orchidea","virágoztatás","metszés","tápoldat"] },
+  { file: "Screenshot_2026-05-28-06-13-03-783_com.facebook.katana.jpg", title: "Élénk komplementer kontraszt ültetési kombináció", source: "kertia.hu", cat: "fajtak", tags: ["komplementer szín","kúpvirág","iszalag","fáklyaliliom"] },
+  { file: "Screenshot_2026-05-28-12-20-52-168_com.facebook.katana.jpg", title: "Angol cottage kert 4 legjellemzőbb növénye", source: "kertia.hu", cat: "fajtak", tags: ["cottage kert","futórózsa","szarkaláb","bazsarózsa"] },
+  { file: "Screenshot_2026-05-28-14-16-30-436_com.facebook.katana.jpg", title: "Hogyan legyen a kerted szúnyogtanya?", source: "kerti tipp", cat: "gondozas", tags: ["szúnyog","állóvíz","kerti tó","humor"] },
+  { file: "Screenshot_2026-05-28-14-17-20-397_com.facebook.katana.jpg", title: "6 meglepő dolog a feketerigókról", source: "kerti tipp", cat: "gondozas", tags: ["feketerigó","madár","kert","énekesmadár"] },
+  { file: "Screenshot_2026-05-29-08-00-07-365_com.facebook.katana.jpg", title: "6 jel, hogy szenved a paprikád", source: "kerti tipp", cat: "zoldseg", tags: ["paprika","napégés","levéltetű","öntözés"] },
+  { file: "Screenshot_2026-05-29-08-00-20-888_com.facebook.katana.jpg", title: "5 növény, amit könnyű cserépben nevelni", source: "kertikek.hu", cat: "fajtak", tags: ["levendula","bazsalikom","anyósnyelv","muskátli"] },
+  { file: "Screenshot_2026-05-29-08-00-53-343_com.facebook.katana.jpg", title: "6 jel, hogy a cukkini küszködik", source: "kerti tipp", cat: "zoldseg", tags: ["cukkini","lisztharmat","beporzás","kártevők"] },
+  { file: "Screenshot_2026-05-29-20-57-37-890_com.facebook.katana.jpg", title: "9 növény, amit egyetlen levélből vízben is gyökereztethetsz", source: "kerti tipp", cat: "szaporitas", tags: ["levéldugvány","gyökereztetés","szobanövény","anyósnyelv"] },
+  { file: "Screenshot_2026-05-29-20-59-23-195_com.facebook.katana.jpg", title: "Kerüljük el ezt a 6 hibát az uborkatermesztés során", source: "hobbikert.hu", cat: "zoldseg", tags: ["uborka","öntözés","talaj","tápanyag"] },
+  { file: "Screenshot_2026-05-29-21-01-39-457_com.facebook.katana.jpg", title: "3 bevált módszer hortenziák szaporítására", source: "kerti tipp", cat: "szaporitas", tags: ["hortenzia","bujtás","dugványozás","tőosztás"] },
+  { file: "Screenshot_2026-05-29-21-06-54-509_com.facebook.katana.jpg", title: "Tűztövis (Pyracantha coccinea) gondozása", source: "kertikek.hu", cat: "gondozas", tags: ["tűztövis","pyracantha","öntözés","metszés"] },
+  { file: "Screenshot_2026-05-30-12-53-03-556_com.facebook.katana.jpg", title: "Bazsalikom visszacsípése", source: "hobbikert.hu", cat: "gondozas", tags: ["bazsalikom","metszés","bokrosodás"] },
+  { file: "Screenshot_2026-05-30-20-09-21-317_com.facebook.katana.jpg", title: "Mit tegyünk a csigák ellen vegyszer nélkül?", source: "kertikek.hu", cat: "novenyvedelem", tags: ["csigák","védekezés","tojáshéj","csapdák"] },
+  { file: "Screenshot_2026-05-30-21-17-55-794_com.facebook.katana.jpg", title: "8 rovar, amely védi a kerted", source: "kerti tipp", cat: "novenyvedelem", tags: ["hasznos rovarok","méh","katicabogár","poszméh"] },
+  { file: "Screenshot_2026-05-30-22-26-28-192_com.facebook.katana.jpg", title: "Miért hullik az apró alma?", source: "hobbikert.hu", cat: "gondozas", tags: ["alma","gyümölcshullás","öntözés","kártevők"] },
+  { file: "Screenshot_2026-05-31-08-16-01-663_com.facebook.katana.jpg", title: "5 futónövény árnyékolásra", source: "kertikek.hu", cat: "fajtak", tags: ["futónövény","borostyán","vadszőlő","lonc"] },
+  { file: "Screenshot_2026-06-01-08-11-47-136_com.facebook.katana.jpg", title: "6 virág, ami kevés vízzel is beéri", source: "kertikek.hu", cat: "fajtak", tags: ["levendula","gazánia","porcsinrózsa","szárazságtűrő"] },
+  { file: "Screenshot_2026-06-02-05-07-12-748_com.facebook.katana.jpg", title: "Virágzó árnyék - 7 bevált növény", source: "hobbikert.hu", cat: "fajtak", tags: ["árnyékliliom","begónia","páfrány","nebáncsvirág"] },
+  { file: "Screenshot_2026-06-02-11-54-36-776_com.facebook.katana.jpg", title: "Mit vessünk júniusban?", source: "kerti tipp", cat: "zoldseg", tags: ["vetés","június","zöldségek","kertinaptár"] },
+  { file: "Screenshot_2026-06-03-06-33-54-024_com.facebook.katana.jpg", title: "Tévhitek és igazságok a darazsakról", source: "kerti tipp", cat: "novenyvedelem", tags: ["darazsak","kártevők","tévhitek","hasznos rovarok"] },
+  { file: "Screenshot_2026-06-03-09-41-45-709_com.facebook.katana.jpg", title: "Fagyal (Ligustrum vulgare) gondozása", source: "kertikek.hu", cat: "gondozas", tags: ["fagyal","sövény","metszés","öntözés"] },
+  { file: "Screenshot_2026-06-03-12-21-17-486_com.facebook.katana.jpg", title: "9 éjszakai virág - varázslatos holdfényes kert", source: "kertia.hu", cat: "fajtak", tags: ["éjszakai virág","holdvirág","jázmin","fehér liliom"] },
+  { file: "Screenshot_2026-06-03-12-25-43-302_com.facebook.katana.jpg", title: "Öt kerti tévhit, amit még mindig ismételnek", source: "kerti tipp", cat: "gondozas", tags: ["talaj","öntözés","tévhitek","komposzt"] },
+  { file: "Screenshot_2026-06-03-15-44-55-750_com.facebook.katana.jpg", title: "Bulguros csirke recept", source: "fitathome.hu", cat: "zoldseg", tags: ["csirke","bulgur","recept","egészséges"] },
+  { file: "Screenshot_2026-06-03-15-45-54-337_com.facebook.katana.jpg", title: "Paradicsomok megmentése nyáron", source: "kerti tipp", cat: "zoldseg", tags: ["paradicsom","öntözés","hőség","mulcsozás"] },
+  { file: "Screenshot_2026-06-03-16-13-49-066_com.facebook.katana.jpg", title: "Mitől repedezik a paradicsom?", source: "kertikek.hu", cat: "gondozas", tags: ["paradicsom","repedés","öntözés","tápanyag"] },
+  { file: "Screenshot_2026-06-04-06-41-09-513_com.facebook.katana.jpg", title: "3 növény, ami gyorsan eltakarja a kerítést", source: "kertikek.hu", cat: "fajtak", tags: ["borostyán","illatos lonc","klematisz","kerítés"] },
+  { file: "Screenshot_2026-06-04-06-44-52-094_com.facebook.katana.jpg", title: "Kék golgotavirág (Passiflora caerulea)", source: "kertia.hu", cat: "fajtak", tags: ["golgotavirág","passiflora","futónövény"] },
+  { file: "Screenshot_2026-06-04-09-35-57-287_com.facebook.katana.jpg", title: "Kertépítés ötletek: 10 népszerű kerti stílus", source: "kertia.hu", cat: "fajtak", tags: ["kerti stílus","kerttervezés","sziklakert","japánkert"] },
+  { file: "Screenshot_2026-06-04-09-36-58-769_com.facebook.katana.jpg", title: "Japán kecskerágó (Euonymus japonicus)", source: "kertikek.hu", cat: "fajtak", tags: ["japán kecskerágó","euonymus","sövény","cserepes növény"] },
+  { file: "Screenshot_2026-06-04-13-37-01-077_com.facebook.katana.jpg", title: "6 ehető virág a kertben", source: "kertikek.hu", cat: "fajtak", tags: ["ehető virágok","sarkantyúka","árvácska","körömvirág"] },
+  { file: "Screenshot_2026-06-04-17-10-08-420_com.facebook.katana.jpg", title: "A madáritatód hiányos?", source: "kerti tipp", cat: "gondozas", tags: ["madáritató","kerti madarak","öntözés-mentes tipp","kert"] },
+  { file: "Screenshot_2026-06-05-14-09-01-613_com.facebook.katana.jpg", title: "Miért érdemes levendulát így nevelni?", source: "kerti tipp", cat: "gondozas", tags: ["levendula","öntözés","metszés","talaj"] },
+  { file: "Screenshot_2026-06-05-18-09-49-996_com.facebook.katana.jpg", title: "10 kerti virág, amit vízben is szaporíthatsz egyetlen dugványról", source: "kerti tipp", cat: "szaporitas", tags: ["dugványozás","vízben gyökereztetés","muskátli","petúnia"] },
+  { file: "Screenshot_2026-06-06-08-39-41-066_com.facebook.katana.jpg", title: "A málna gondozása és metszése", source: "kertikek.hu", cat: "zoldseg", tags: ["málna","metszés","gyümölcstermesztés","öntözés"] },
+  { file: "Screenshot_2026-06-07-07-13-25-016_com.facebook.katana.jpg", title: "7 növény, ami gyorsan nő és látványos", source: "kertikek.hu", cat: "fajtak", tags: ["bambusz","gyors növekedés","sövény","klematisz"] },
+  { file: "Screenshot_2026-06-07-08-59-29-094_com.facebook.katana.jpg", title: "9 zöldség, amit júniusban vethetsz!", source: "kerti tipp", cat: "zoldseg", tags: ["zöldségvetés","június","cukkini","retek"] },
+  { file: "Screenshot_2026-06-07-18-39-31-991_com.facebook.katana.jpg", title: "9 fehér virágú évelő, amelyet ültessünk júniusban", source: "kertia.hu", cat: "fajtak", tags: ["fehér virág","évelő","június","ültetés"] },
+  { file: "Screenshot_2026-06-08-06-17-53-357_com.facebook.katana.jpg", title: "5 virág, ami estére illatozik igazán", source: "kertikek.hu", cat: "fajtak", tags: ["esti illat","éjszakai királynő","jázmin","lonc"] },
+  { file: "Screenshot_2026-06-08-09-44-31-685_com.facebook.katana.jpg", title: "Sziklakert ötletek: építés, kövek és növényválasztás", source: "kertia.hu", cat: "fajtak", tags: ["sziklakert","kövek","évelők","aubrieta"] },
+  { file: "Screenshot_2026-06-09-07-19-39-527_com.facebook.katana.jpg", title: "Cukkini függőlegesen? Így csináld!", source: "hobbikert.hu", cat: "zoldseg", tags: ["cukkini","támrendszer","öntözés","termesztés"] },
+  { file: "Screenshot_2026-06-09-13-19-11-290_com.facebook.katana.jpg", title: "25 virág, amelyről érdemes levágnod az elszáradt virágfejeket", source: "kerti tipp", cat: "gondozas", tags: ["deadheading","elszáradt virágfej","metszés","virágzás"] },
+  { file: "Screenshot_2026-06-10-06-08-20-772_com.facebook.katana.jpg", title: "9 szárazságtűrő évelő, amelyet telepítsünk júniusban", source: "kertia.hu", cat: "fajtak", tags: ["szárazságtűrő","évelő","levendula","kasvirág"] },
+  { file: "Screenshot_2026-06-11-06-26-09-659_com.facebook.katana.jpg", title: "Mely zöldségek szeretik a sok vizet - és melyek nem?", source: "kerti tipp", cat: "zoldseg", tags: ["öntözés","zöldségtermesztés","vízigény","uborka"] },
+  { file: "Screenshot_2026-06-11-09-29-02-255_com.facebook.katana.jpg", title: "Mitől keseredik meg az uborka?", source: "kertikek.hu", cat: "zoldseg", tags: ["uborka","keserű íz","öntözés","tápanyag"] },
+  { file: "Screenshot_2026-06-12-16-58-28-707_com.facebook.katana.jpg", title: "6 virág, ami jól viseli az erős napot", source: "kertikek.hu", cat: "fajtak", tags: ["levendula","kaktuszvirág","zinnia","napfénytűrő"] },
+  { file: "Screenshot_2026-06-13-07-21-48-766_com.facebook.katana.jpg", title: "5 napimádó túlélő virág a kánikulára", source: "hobbikert.hu", cat: "fajtak", tags: ["menyecskeszem","díszpipacs","porcsinrózsa","kánikula"] },
+  { file: "Screenshot_2026-06-13-07-26-07-510_com.facebook.katana.jpg", title: "5 növény, amit ősszel érdemes ültetni", source: "kertikek.hu", cat: "fajtak", tags: ["levendula","hóvirág","foghagyma","buxus"] },
+  { file: "Screenshot_2026-06-14-08-51-48-170_com.facebook.katana.jpg", title: "10 virág, ami nem kér napi könyörgést locsolókannával", source: "hobbikert.hu", cat: "fajtak", tags: ["szárazságtűrő","sóvirág","zsálya","rozmaring"] },
+  { file: "Screenshot_2026-06-14-21-59-32-611_com.facebook.katana.jpg", title: "Leszedted a ribizlit? A bokor még nem végzett", source: "hobbikert.hu", cat: "zoldseg", tags: ["ribizli","metszés","gyümölcsbokor"] },
+  { file: "Screenshot_2026-06-15-11-54-23-167_com.facebook.katana.jpg", title: "Minden virág, nem mind termés - a cukkini hím- és nővirága", source: "kerti tipp", cat: "zoldseg", tags: ["cukkini","beporzás","hímvirág","nővirág"] },
+  { file: "Screenshot_2026-06-15-16-07-49-436_com.facebook.katana.jpg", title: "7 gyógynövény, amit otthon is nevelhetsz", source: "kertikek.hu", cat: "zoldseg", tags: ["bazsalikom","rozmaring","levendula","kamilla"] },
+  { file: "Screenshot_2026-06-16-06-28-15-388_com.facebook.katana.jpg", title: "Egy sör, egy vödör - reggelre nincs csiga", source: "kerti tipp", cat: "novenyvedelem", tags: ["csiga","sörcsapda","kártevő"] },
+  { file: "Screenshot_2026-06-16-06-31-39-217_com.facebook.katana.jpg", title: "18 növény, amit jobb elkerülni a kertben Magyarországon", source: "kerti tipp", cat: "fajtak", tags: ["invazív növények","fák","cserjék"] },
+  { file: "Screenshot_2026-06-16-06-42-21-296_com.facebook.katana.jpg", title: "Struccpáfrány (Matteuccia struthiopteris)", source: "kerti tipp", cat: "fajtak", tags: ["struccpáfrány","páfrány","árnyékkedvelő"] },
+  { file: "Screenshot_2026-06-16-07-21-33-031_com.facebook.katana.jpg", title: "Nyári virágözön - fák és cserjék, amelyek nyáron virágoznak", source: "hobbikert.hu", cat: "fajtak", tags: ["selyemakác","hortenzia","rózsa","nyáriorgona"] },
+  { file: "Screenshot_2026-06-16-10-46-51-442_com.facebook.katana.jpg", title: "Törpe nőszirom (Iris pumila)", source: "kertikek.hu", cat: "fajtak", tags: ["nőszirom","iris","sziklakert"] },
+  { file: "Screenshot_2026-06-16-14-21-53-428_com.facebook.katana.jpg", title: "Rozmaring - az illatos örökzöld gyógynövény", source: "HERBAVITAL", cat: "zoldseg", tags: ["rozmaring","gyógynövény","fűszernövény"] },
+  { file: "Screenshot_2026-06-16-18-16-58-068_com.facebook.katana.jpg", title: "Nem minden cseresznye ugyanaz - figyelj a porzótársra", source: "hobbikert.hu", cat: "zoldseg", tags: ["cseresznye","fajták","porzótárs"] },
+  { file: "Screenshot_2026-06-16-19-07-55-205_com.facebook.katana.jpg", title: "Madárfészek a kertben - így ismerheted fel, ki lakik benne", source: "kerti tipp", cat: "gondozas", tags: ["madárfészek","kert","madarak"] },
+  { file: "Screenshot_2026-06-17-10-40-13-960_com.facebook.katana.jpg", title: "Kékgyökér (Ceratostigma plumbaginoides) - a kert ékköve őszig", source: "kertikek.hu", cat: "fajtak", tags: ["kékgyökér","őszi virágzás","szegélynövény"] },
+  { file: "Screenshot_2026-06-18-06-17-50-262_com.facebook.katana.jpg", title: "Rózsa szaporítása - egy hajtásból 8-12 új növény", source: "kerti tipp", cat: "szaporitas", tags: ["rózsa","dugványozás","szaporítás"] },
+  { file: "Screenshot_2026-06-18-13-14-19-626_com.facebook.katana.jpg", title: "Melyik burgonyát kell sütni, melyiket kell főzni?", source: "hobbikert.hu", cat: "zoldseg", tags: ["burgonya","krumpli","fajták"] },
+  { file: "Screenshot_2026-06-18-13-14-34-132_com.facebook.katana.jpg", title: "Régi szilvafajták - kincsek a nagyszülők kertjéből", source: "kertikek.hu", cat: "zoldseg", tags: ["szilva","régi fajták","gyümölcs"] },
+  { file: "Screenshot_2026-06-18-13-15-00-493_com.facebook.katana.jpg", title: "Uborka felfuttatása - több hely, több fény, több termés", source: "kertikek.hu", cat: "zoldseg", tags: ["uborka","felfuttatás","termesztés"] },
+  { file: "Screenshot_2026-06-18-13-17-22-536_com.facebook.katana.jpg", title: "Meggyfajták érési sorrendje", source: "kertikek.hu", cat: "zoldseg", tags: ["meggy","érési idő","fajták"] },
+  { file: "Screenshot_2026-06-18-13-18-53-290_com.facebook.katana.jpg", title: "Meggyfajták a házikertben", source: "hobbikert.hu", cat: "fajtak", tags: ["meggy","gyümölcsfa","fajtaválasztás"] },
+  { file: "Screenshot_2026-06-19-10-33-13-543_com.facebook.katana.jpg", title: "Pázsitszegfű gondozása", source: "kertikek.hu", cat: "gondozas", tags: ["pázsitszegfű","armeria","sziklakert"] },
+  { file: "Screenshot_2026-06-19-10-36-56-771_com.facebook.katana.jpg", title: "6 legjobb virágpárosítás", source: "kerti tipp", cat: "fajtak", tags: ["virágpárosítás","társnövény","ültetés"] },
+  { file: "Screenshot_2026-06-19-22-31-09-088_com.facebook.katana.jpg", title: "6 virág, ami imádja az árnyékot", source: "kertikek.hu", cat: "fajtak", tags: ["árnyéktűrő","gyöngyvirág","hosta","szívvirág"] },
+  { file: "Screenshot_2026-06-20-07-37-17-231_com.facebook.katana.jpg", title: "A fűszerek fény- és vízigénye", source: "kerti tipp", cat: "zoldseg", tags: ["fűszernövény","öntözés","fényigény"] },
+  { file: "Screenshot_2026-06-20-15-37-43-512_com.facebook.katana.jpg", title: "Aloe vera gondozása", source: "kertikek.hu", cat: "gondozas", tags: ["aloe vera","szobanövény","pozsgás"] },
+  { file: "Screenshot_2026-06-20-16-20-52-755_com.facebook.katana.jpg", title: "5 növény, amit imádnak a madarak", source: "kertikek.hu", cat: "fajtak", tags: ["madárbarát növény","bodza","csipkebogyó"] },
+  { file: "Screenshot_2026-06-21-22-03-22-519_com.facebook.katana.jpg", title: "A cukkini gondozása extrém melegben", source: "kertikek.hu", cat: "zoldseg", tags: ["cukkini","hőhullám","zöldségtermesztés"] },
+  { file: "Screenshot_2026-06-21-22-04-51-545_com.facebook.katana.jpg", title: "4 gyorsan növő évelő virág", source: "kertikek.hu", cat: "fajtak", tags: ["macskamenta","sásliliom","kasvirág","tollbuga"] },
+  { file: "Screenshot_2026-06-21-22-07-37-733_com.facebook.katana.jpg", title: "Miért rothad a paprika és paradicsom termésének csúcsa", source: "kerti tipp", cat: "zoldseg", tags: ["paradicsom","paprika","csúcsrothadás","kalciumhiány"] },
+  { file: "Screenshot_2026-06-23-07-17-55-125_com.facebook.katana.jpg", title: "Hosta Halcyon árnyékliliom növényadatlap", source: "kertia.hu", cat: "fajtak", tags: ["hosta","árnyékliliom","árnyékos kert"] },
+  { file: "Screenshot_2026-06-23-07-45-52-852_com.facebook.katana.jpg", title: "Aszálytűrő virágok, amelyek nyáron is szépek maradnak", source: "kertikek.hu", cat: "fajtak", tags: ["levendula","bíborkasvirág","cickafark","szárazságtűrő"] },
+  { file: "Screenshot_2026-06-23-08-16-05-351_com.facebook.katana.jpg", title: "Mely növényeket árnyékold a nyári hőhullámok alatt?", source: "kertikek.hu", cat: "gondozas", tags: ["hortenzia","árnyékolás","hőhullám"] },
+  { file: "Screenshot_2026-06-23-16-38-06-310_com.facebook.katana.jpg", title: "Díszfüvek: forróságot és szárazságot tűrő fajták", source: "hobbikert.hu", cat: "fajtak", tags: ["díszfű","kék csenkesz","árvalányhaj"] },
+  { file: "Screenshot_2026-06-23-21-24-05-007_com.facebook.katana.jpg", title: "A sértődékeny hortenzia: miért drámázik?", source: "hobbikert.hu", cat: "gondozas", tags: ["hortenzia","vízstressz","metszés"] },
+  { file: "Screenshot_2026-06-24-07-07-19-752_com.facebook.katana.jpg", title: "Mely növények hálásak a mulcsért?", source: "kertészeti tipp", cat: "gondozas", tags: ["mulcs","talaj","öntözés"] },
+  { file: "Screenshot_2026-06-24-07-07-45-521_com.facebook.katana.jpg", title: "Nyári betegségek a veteményesben", source: "Kertlap", cat: "novenyvedelem", tags: ["paradicsomvész","lisztharmat","peronoszpóra"] },
+  { file: "Screenshot_2026-06-24-18-55-16-727_com.facebook.katana.jpg", title: "Növény szaporítás lépésről lépésre — Hortenzia", source: "kertia.hu", cat: "szaporitas", tags: ["hortenzia","dugványozás"] },
+  { file: "Screenshot_2026-06-25-11-06-29-086_com.facebook.katana.jpg", title: "5 legszebb sövénynövény fajta", source: "kertia.hu", cat: "fajtak", tags: ["sövény","csodasövény","borbolya"] },
+  { file: "Screenshot_2026-06-25-11-11-17-115_com.facebook.katana.jpg", title: "5 legszebb kék virágú évelő", source: "kertia.hu", cat: "fajtak", tags: ["kék virág","zsálya","gólyaorr"] },
+  { file: "Screenshot_2026-06-25-14-09-37-718_com.facebook.katana.jpg", title: "Puszpáng szaporítása lépésről lépésre", source: "kertia.hu", cat: "szaporitas", tags: ["puszpáng","dugványozás"] },
+  { file: "Screenshot_2026-06-25-14-10-11-143_com.facebook.katana.jpg", title: "Nyári tápanyag-utánpótlás: mire van valóban szükség?", source: "kertikek.hu", cat: "gondozas", tags: ["tápanyag","nitrogén","trágyázás"] },
+  { file: "Screenshot_2026-06-25-14-11-33-885_com.facebook.katana.jpg", title: "Tetrapanax papyrifer (Papírarália)", source: "kertia.hu", cat: "fajtak", tags: ["egzotikus","trópusi","mérgező"] },
+  { file: "Screenshot_2026-06-25-14-12-42-085_com.facebook.katana.jpg", title: "A magaságyás különleges kihívásai nyáron", source: "kertikek.hu", cat: "gondozas", tags: ["magaságyás","öntözés"] },
+  { file: "Screenshot_2026-06-26-06-24-11-987_com.facebook.katana.jpg", title: "Tudtad? A sárguló levelek nem mindig vízhiányt jeleznek", source: "kertikek.hu", cat: "gondozas", tags: ["sárguló levél","tápanyaghiány"] },
+  { file: "Screenshot_2026-06-26-07-49-16-253_com.facebook.katana.jpg", title: "Oszlopos Japán borbolya 'Chocolate Summer'", source: "Császárfa Kertészet", cat: "fajtak", tags: ["borbolya","sövény","díszcserje"] },
+  { file: "Screenshot_2026-06-29-12-25-06-693_com.facebook.katana.jpg", title: "5 legillatosabb évelő virág", source: "kertia.hu", cat: "fajtak", tags: ["levendula","bazsarózsa","gyöngyvirág"] },
+  { file: "Screenshot_2026-07-02-21-52-57-123_com.facebook.katana.jpg", title: "Fekete folt a rózsán? Így kezeld egyszerűen!", source: "hobbikert.hu", cat: "novenyvedelem", tags: ["rózsa","gombabetegség","permetezés"] },
+  { file: "Screenshot_2026-07-03-10-47-53-357_com.facebook.katana.jpg", title: "Az elnyílt rózsák visszafoghatják az új virágzást", source: "kerti tipp", cat: "gondozas", tags: ["rózsa","metszés","visszavágás"] },
+  { file: "Screenshot_2026-07-06-08-00-26-515_com.facebook.katana.jpg", title: "Japán díszcseresznyék - 4 különleges fajta", source: "kerti tipp", cat: "fajtak", tags: ["díszcseresznye","japán cseresznyefa","kanzan"] },
+  { file: "Screenshot_2026-07-06-15-45-03-532_com.facebook.katana.jpg", title: "15 növény, amelyet levélről szaporíthatsz", source: "kerti tipp", cat: "szaporitas", tags: ["szaporítás","levéldugvány","szukkulens"] },
+  { file: "Screenshot_2026-07-08-21-32-57-939_com.facebook.katana.jpg", title: "Növénykalauz az 5 érzékszervre hangolva - Látvány", source: "kerti tipp", cat: "fajtak", tags: ["dísznövény","virágos kert","sásliliom"] },
+  { file: "Screenshot_2026-07-11-09-52-53-862_com.facebook.katana.jpg", title: "Aszálytűrő kert locsolás nélkül", source: "kerti tipp", cat: "gondozas", tags: ["aszálytűrő kert","mulcsozás","vízhiány"] },
+  { file: "Screenshot_2026-07-11-16-27-26-549_com.facebook.katana.jpg", title: "Melyik oszloptiszafát válaszd?", source: "hobbikert.hu", cat: "fajtak", tags: ["tiszafa","taxus","sövénynövény"] },
+  { file: "Screenshot_2026-07-14-07-43-06-191_com.facebook.katana.jpg", title: "7 legszebb nyári hagymás", source: "kertikek.hu", cat: "fajtak", tags: ["hagymás virág","liliom","díszhagyma","kardvirág"] },
+  { file: "Screenshot_2026-07-14-16-00-23-532_com.facebook.katana.jpg", title: "10 talajtakaró növény gyomok ellen", source: "kertikek.hu", cat: "fajtak", tags: ["talajtakaró","gyomirtás","árnyéktűrő"] },
+  { file: "Screenshot_2026-07-16-14-27-52-296_com.facebook.katana.jpg", title: "Mivel futtasd fel a ház falát?", source: "balintgazda.hu", cat: "fajtak", tags: ["futónövény","kúszónövény","vadszőlő","futórózsa"] },
+  { file: "Screenshot_2026-07-17-13-42-49-272_com.facebook.katana.jpg", title: "10 virágzó szegélynövény kerti utak mellé", source: "kertikek.hu", cat: "fajtak", tags: ["szegélynövény","kerti út","pázsitviola"] },
+  { file: "Screenshot_2026-07-17-13-47-11-338_com.facebook.katana.jpg", title: "Pampafű gondozása", source: "kertikek.hu", cat: "gondozas", tags: ["pampafű","cortaderia","díszfű"] },
+  { file: "Screenshot_2026-07-17-13-49-42-189_com.facebook.katana.jpg", title: "Erdei mályva (Malva sylvestris) gondozása", source: "kertikek.hu", cat: "gondozas", tags: ["mályva","malva sylvestris","öntözés","metszés"] },
+  { file: "Screenshot_2026-07-17-13-51-54-412_com.facebook.katana.jpg", title: "Kínai dísznád (Miscanthus sinensis) gondozása", source: "kertikek.hu", cat: "gondozas", tags: ["dísznád","miscanthus","díszfű"] },
+  { file: "Screenshot_2026-07-17-13-52-09-256_com.facebook.katana.jpg", title: "Tollborzfű (Cenchrus alopecuroides)", source: "kertikek.hu", cat: "gondozas", tags: ["tollborzfű","díszfű","cenchrus"] },
+  { file: "Screenshot_2026-07-19-13-17-55-127_com.facebook.katana.jpg", title: "Platán levelű eperfa 'Fruitless' - termés nélküli", source: "kertikek.hu", cat: "fajtak", tags: ["eperfa","fruitless","díszfa","árnyékoló fa"] },
+  { file: "Screenshot_2026-07-19-13-20-53-026_com.facebook.katana.jpg", title: "Díszcsalán (Plectranthus scutellarioides) - színpompás szépség", source: "kertikek.hu", cat: "gondozas", tags: ["díszcsalán","coleus","szobanövény"] },
+  { file: "Screenshot_2026-07-21-17-46-30-506_com.facebook.katana.jpg", title: "Most ültessünk nőziromtöveket!", source: "balintgazda.hu", cat: "szaporitas", tags: ["nőszirom","irisz","ültetés"] },
+  { file: "Screenshot_2026-07-22-08-37-46-563_com.facebook.katana.jpg", title: "Közönséges szivarfa (Catalpa bignonioides)", source: "kertikek.hu", cat: "fajtak", tags: ["szivarfa","catalpa","díszfa"] },
+  { file: "Screenshot_2026-07-22-12-42-53-789_com.facebook.katana.jpg", title: "Ültesd ezeket a színekért, öntözés nélkül", source: "kerti tipp", cat: "fajtak", tags: ["levendula","rudbeckia","echinacea","szárazságtűrő"] },
+  { file: "Screenshot_2026-07-22-12-44-58-537_com.facebook.katana.jpg", title: "Mit ültess most az őszi színpompáért?", source: "kerti tipp", cat: "fajtak", tags: ["krizantém","őszirózsa","árvácska","díszkáposzta"] },
+  { file: "Screenshot_2026-07-22-15-26-01-396_com.facebook.katana.jpg", title: "Hortenziák fajtái és gondozása", source: "kerti tipp", cat: "gondozas", tags: ["hortenzia","hydrangea","metszés","talaj ph"] },
+  { file: "Screenshot_2026-07-23-13-45-17-529_com.facebook.katana.jpg", title: "Zöldtrágyanövények a kertben - 5 faj, amely védi és javítja a talajt", source: "kertikek.hu", cat: "gondozas", tags: ["zöldtrágya","facélia","talajjavítás","bíborhere"] },
+  { file: "Screenshot_2026-07-24-08-19-51-412_com.facebook.katana.jpg", title: "Olasznád (Arundo donax) - előnyei és hátrányai", source: "kertikek.hu", cat: "fajtak", tags: ["olasznád","arundo donax","díszfű"] },
+  { file: "Screenshot_2026-07-24-12-33-42-736_com.facebook.katana.jpg", title: "Díszfüvek és sások - melyiket hova ültesd?", source: "hobbikert.hu", cat: "fajtak", tags: ["díszfű","sás","csenkesz","pampafű"] },
+  { file: "Screenshot_2026-07-24-15-36-30-654_com.facebook.katana.jpg", title: "9 gyakori hiba, ami miatt a madarak elhagyják a kertedet", source: "kertikek.hu", cat: "gondozas", tags: ["madarak","madárbarát kert","kerti hibák"] },
+  { file: "Screenshot_2026-07-25-14-51-21-885_com.facebook.katana.jpg", title: "5 növény, amit otthon is termeszthetsz", source: "kertikek.hu", cat: "zoldseg", tags: ["ginkgo","fokhagyma","cayenne bors","áfonya"] },
+  { file: "Screenshot_2026-07-25-21-41-07-600_com.facebook.katana.jpg", title: "Törpe vérszilva (Prunus x cistena) - bordó lomb, kis helyigény", source: "hobbikert.hu", cat: "fajtak", tags: ["vérszilva","prunus cistena","díszcserje"] },
+  { file: "Screenshot_2026-07-26-11-56-23-187_com.facebook.katana.jpg", title: "Talajtakaró növények a kiszáradás ellen - 3 dekoratív megoldás", source: "kertikek.hu", cat: "gondozas", tags: ["talajtakaró","borostyán","kakukkfű","pázsitvirág"] },
+  { file: "Screenshot_2026-07-26-11-57-56-379_com.facebook.katana.jpg", title: "Vigyázat, a geotextil nem mindig a barátunk!", source: "kerti tipp", cat: "gondozas", tags: ["geotextil","mulcs","talajvédelem"] },
+  { file: "Screenshot_2026-07-26-11-58-12-146_com.facebook.katana.jpg", title: "Bohócvirág (Mimulus) - színes, vidám virág egész nyárra", source: "hobbikert.hu", cat: "fajtak", tags: ["bohócvirág","mimulus","balkonnövény"] },
+  { file: "Screenshot_2026-07-27-13-01-55-917_com.facebook.katana.jpg", title: "Japán juharok - különleges fajták, különleges kertekbe", source: "Császárfa Kertészet", cat: "fajtak", tags: ["japán juhar","acer palmatum","díszfa","vérbordó juhar"] }
+];
+
+const grid = document.getElementById("grid");
+const countEl = document.getElementById("count");
+const emptyEl = document.getElementById("empty");
+let activeFilter = "all";
+let activeSearch = "";
+let visibleItems = items.slice();
+
+function render() {
+  visibleItems = items.filter(it => {
+    const catOk = activeFilter === "all" || it.cat === activeFilter;
+    const hay = (it.title + " " + it.source + " " + it.tags.join(" ")).toLowerCase();
+    const searchOk = !activeSearch || hay.includes(activeSearch);
+    return catOk && searchOk;
+  });
+
+  grid.innerHTML = visibleItems.map((it, i) => `
+    <div class="card" data-idx="${items.indexOf(it)}">
+      <div class="thumb-wrap">
+        <span class="cat-badge">${CATS[it.cat]}</span>
+        <img src="cropped/${it.file}" alt="${it.title}" loading="lazy">
+      </div>
+      <div class="card-body">
+        <div class="card-title">${it.title}</div>
+        <div class="source">${it.source}</div>
+        <div class="tag-row">${it.tags.map(t => `<span class="tag">${t}</span>`).join("")}</div>
+      </div>
+    </div>
+  `).join("");
+
+  countEl.textContent = `${visibleItems.length} / ${items.length} kártya`;
+  emptyEl.style.display = visibleItems.length === 0 ? "block" : "none";
+
+  grid.querySelectorAll(".card").forEach(card => {
+    card.addEventListener("click", () => openLightbox(parseInt(card.dataset.idx, 10)));
+  });
+}
+
+document.querySelectorAll(".filter-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    activeFilter = btn.dataset.filter;
+    render();
+  });
+});
+
+document.getElementById("search").addEventListener("input", (e) => {
+  activeSearch = e.target.value.trim().toLowerCase();
+  render();
+});
+
+// Lightbox
+const lightbox = document.getElementById("lightbox");
+const lbImg = document.getElementById("lbImg");
+const lbTitle = document.getElementById("lbTitle");
+const lbSource = document.getElementById("lbSource");
+let currentIdx = 0;
+
+function openLightbox(idx) {
+  currentIdx = idx;
+  showCurrent();
+  lightbox.classList.add("open");
+}
+function showCurrent() {
+  const it = items[currentIdx];
+  lbImg.src = "cropped/" + it.file;
+  lbImg.alt = it.title;
+  lbTitle.textContent = it.title;
+  lbSource.textContent = it.source;
+}
+function closeLightbox() { lightbox.classList.remove("open"); }
+function step(dir) {
+  currentIdx = (currentIdx + dir + items.length) % items.length;
+  showCurrent();
+}
+document.getElementById("lbClose").addEventListener("click", closeLightbox);
+document.getElementById("lbPrev").addEventListener("click", () => step(-1));
+document.getElementById("lbNext").addEventListener("click", () => step(1));
+lightbox.addEventListener("click", (e) => { if (e.target === lightbox) closeLightbox(); });
+document.addEventListener("keydown", (e) => {
+  if (!lightbox.classList.contains("open")) return;
+  if (e.key === "Escape") closeLightbox();
+  if (e.key === "ArrowLeft") step(-1);
+  if (e.key === "ArrowRight") step(1);
+});
+
+render();
+</script>
+</body>
+</html>
